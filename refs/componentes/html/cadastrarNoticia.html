@@ -1,0 +1,24 @@
+<link rel="stylesheet" href="/css/cadastrarNoticia.css">
+<div class="form-card-container">
+    <h2>Cadastrar Notícia</h2>
+    <form>
+        <div class="form-group">
+            <label for="titulo">Título:</label>
+            <input type="text" id="titulo" name="titulo" placeholder="Título">
+        </div>
+        <div class="form-group">
+            <label for="subtitulo">Subtítulo:</label>
+            <input type="text" id="subtitulo" name="subtitulo" placeholder="Subtítulo">
+        </div>
+        <div class="form-group">
+            <label for="conteudo">Conteúdo:</label>
+            <textarea id="conteudo" name="conteudo" placeholder="Conteúdo..."></textarea>
+        </div>
+        <div class="form-group">
+            <label for="anexo">Anexar Imagens/Vídeos:</label>
+            <label for="anexo" class="file-btn">Escolher arquivo...</label>
+            <input type="file" id="anexo" name="anexo" accept="image/*,video/*">
+        </div>
+        <button type="submit">Enviar</button>
+    </form>
+</div>

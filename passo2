@@ -1,0 +1,803 @@
+hooks:
+/home/rafael/Projects/PesquisaESociedade/podcast/Project-Podcast/frontend/src/hooks/useAuth.tsx
+import React, { useState, createContext, useContext, ReactNode } from 'react';
+import type { User, AuthFormData } from '../models/user';
+
+interface AuthContextType {
+  user: User;
+  login: (credentials: AuthFormData) => void;
+  logout: () => void;
+  updateUser: (userData: Partial<User>) => void;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
+
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<User>({
+    id: '1',
+    name: 'Fulano',
+    email: 'fulano@email.com',
+    username: 'fulano',
+    isLoggedIn: true,
+  });
+
+  const login = (credentials: AuthFormData) => {
+    console.log('login', credentials);
+    setUser((prev) => ({ ...prev, isLoggedIn: true }));
+  };
+
+  const logout = () => {
+    setUser((prev) => ({ ...prev, isLoggedIn: false }));
+  };
+
+  const updateUser = (userData: Partial<User>) => {
+    setUser((prev) => ({ ...prev, ...userData }));
+  };
+
+  const value = { user, login, logout, updateUser };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+/home/rafael/Projects/PesquisaESociedade/podcast/Project-Podcast/frontend/src/hooks/useNavigation.tsx
+import React, { useState, createContext, useContext, ReactNode } from 'react';
+
+export type Page = 'home' | 'podcasts' | 'playback' | 'login' | 'register';
+
+interface NavigationContextType {
+  currentPage: Page;
+  navigateTo: (page: Page) => void;
+}
+
+const NavigationContext = createContext<NavigationContextType | undefined>(undefined);
+
+export const useNavigation = () => {
+  const context = useContext(NavigationContext);
+  if (!context) {
+    throw new Error('useNavigation must be used within a NavigationProvider');
+  }
+  return context;
+};
+
+export const NavigationProvider = ({ children }: { children: ReactNode }) => {
+  const [currentPage, setCurrentPage] = useState<Page>('home');
+
+  const navigateTo = (page: Page) => {
+    setCurrentPage(page);
+  };
+
+  const value = { currentPage, navigateTo };
+
+  return (
+    <NavigationContext.Provider value={value}>
+      {children}
+    </NavigationContext.Provider>
+  );
+};
+
+/home/rafael/Projects/PesquisaESociedade/podcast/Project-Podcast/frontend/src/models/user.ts
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  username: string;
+  isLoggedIn: boolean;
+}
+
+export interface AuthFormData {
+  name?: string;
+  username: string;
+  email?: string;
+  password: string;
+  confirmPassword?: string;
+  rememberMe: boolean;
+}
+
+/home/rafael/Projects/PesquisaESociedade/podcast/Project-Podcast/frontend/src/ui/components/Header/UserDropdown.tsx
+import React, { useState } from 'react';
+import { useAuth } from '../../../hooks/useAuth';
+import userIcon from '../../../assets/images/icon-user.png';
+import { useNavigation } from '../../../hooks/useNavigation';
+import './Header.css';
+
+const UserDropdown: React.FC = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const { navigateTo } = useNavigation();
+
+  const toggleDropdown = () => setIsOpen(!isOpen);
+
+  const handleLoginClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    navigateTo('login');
+  };
+
+  return (
+    <div className="user-wrap">
+      <button 
+        className="icon-btn" 
+        onClick={toggleDropdown}
+        aria-haspopup="true" 
+        aria-expanded={isOpen}
+        title="Usuário"
+      >
+        <img src={userIcon} alt="Usuário" />
+      </button>
+      
+      <div className={`dropdown user-dropdown ${isOpen ? 'show' : ''}`}>
+        {user.isLoggedIn ? (
+          <>
+            <a href="#">Configurações</a>
+            <a href="#" onClick={logout}>Logoff</a>
+          </>
+        ) : (
+          <a href="#" onClick={handleLoginClick}>Acessar</a>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default UserDropdown;
+
+/home/rafael/Projects/PesquisaESociedade/podcast/Project-Podcast/frontend/src/ui/components/Menu/SearchBar.tsx
+import React from 'react';
+import './SearchBar.css';
+
+const SearchBar: React.FC = () => {
+  return (
+    <div className="InputContainer">
+      <input
+        placeholder="Search"
+        id="input"
+        className="input"
+        name="text"
+        type="text"
+      />
+
+      <label className="labelforsearch" htmlFor="input">
+        <svg className="searchIcon" viewBox="0 0 512 512">
+          <path
+            d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"
+          ></path>
+        </svg>
+      </label>
+    </div>
+  );
+};
+
+export default SearchBar;
+
+/home/rafael/Projects/PesquisaESociedade/podcast/Project-Podcast/frontend/src/ui/components/News/NewsCard.tsx
+import React from 'react';
+import './NewsCard.css';
+
+interface NewsItem {
+  id: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  imageUrl: string;
+}
+
+interface NewsCardProps {
+  item: NewsItem;
+}
+
+const NewsCard: React.FC<NewsCardProps> = ({ item }) => {
+  return (
+    <div className="card">
+      <div className="card-img" style={{ backgroundImage: `url(${item.imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
+      <div className="card-info">
+        <svg height="24" width="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0 0h24v24H0z" fill="none"></path>
+          <path d="M4.828 21l-.02.02-.021-.02H2.992A.993.993 0 0 1 2 20.007V3.993A1 1 0 0 1 2.992 3h18.016c.548 0 .992.445.992.993v16.014a1 1 0 0 1-.992.993H4.828zM20 15V5H4v14L14 9l6 6zm0 2.828l-6-6L6.828 19H20v-1.172zM8 11a2 2 0 1 1 0-4 2 2 0 0 1 0 4z" fill="currentColor"></path>
+        </svg>
+        <p className="text-title">{item.title}</p>
+        <p className="text-body">{item.subtitle}</p>
+      </div>
+    </div>
+  );
+};
+
+export default NewsCard;
+
+/home/rafael/Projects/PesquisaESociedade/podcast/Project-Podcast/frontend/src/ui/components/News/NewsCarousel.tsx
+import React, { useRef } from 'react';
+import NewsCard from './NewsCard';
+import FancyCarouselArrow from '../common/FancyCarouselArrow';
+import './NewsCarousel.css';
+
+interface NewsItem {
+  id: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  imageUrl: string;
+}
+
+const NewsCarousel: React.FC = () => {
+  const newsItems: NewsItem[] = [
+    {
+      id: '1',
+      title: 'Title 1',
+      subtitle: 'Subtitle 1',
+      description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
+      imageUrl: 'placeholder-news.png'
+    },
+    {
+      id: '2',
+      title: 'Title 2',
+      subtitle: 'Subtitle 2',
+      description: 'Sed do eiusmod tempor incididunt ut labore et dolore',
+      imageUrl: 'placeholder-news.png'
+    },
+    {
+      id: '3',
+      title: 'Title 2',
+      subtitle: 'Subtitle 2',
+      description: 'Sed do eiusmod tempor incididunt ut labore et dolore',
+      imageUrl: 'placeholder-news.png'
+    },
+    {
+      id: '4',
+      title: 'Title 2',
+      subtitle: 'Subtitle 2',
+      description: 'Sed do eiusmod tempor incididunt ut labore et dolore',
+      imageUrl: 'placeholder-news.png'
+    },
+    {
+      id: '5',
+      title: 'Title 2',
+      subtitle: 'Subtitle 2',
+      description: 'Sed do eiusmod tempor incididunt ut labore et dolore',
+      imageUrl: 'placeholder-news.png'
+    },
+    {
+      id: '6',
+      title: 'Title 2',
+      subtitle: 'Subtitle 2',
+      description: 'Sed do eiusmod tempor incididunt ut labore et dolore',
+      imageUrl: 'placeholder-news.png'
+    },
+    {
+      id: '7',
+      title: 'Title 2',
+      subtitle: 'Subtitle 2',
+      description: 'Sed do eiusmod tempor incididunt ut labore et dolore',
+      imageUrl: 'placeholder-news.png'
+    }
+  ];
+
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const handleScroll = (direction: 'prev' | 'next') => {
+    if (scrollRef.current) {
+      const containerWidth = scrollRef.current.offsetWidth;
+      const scrollAmount = containerWidth / 2;
+      if (direction === 'next') {
+        scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+      } else {
+        scrollRef.current.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+      }
+    }
+  };
+
+  return (
+    <div className="news-carousel">
+      <div className="cards-row" ref={scrollRef}>
+        {newsItems.map((item) => (
+          <NewsCard key={item.id} item={item} />
+        ))}
+      </div>
+      
+      <div className="carousel-controls">
+        <FancyCarouselArrow direction="prev" onClick={() => handleScroll('prev')} />
+        <FancyCarouselArrow direction="next" onClick={() => handleScroll('next')} />
+      </div>
+    </div>
+  );
+};
+
+export default NewsCarousel;
+
+/home/rafael/Projects/PesquisaESociedade/podcast/Project-Podcast/frontend/src/ui/components/Player/MiniPlayer.tsx
+import React, { useState, useRef } from 'react';
+import './MiniPlayer.css';
+
+const MiniPlayer: React.FC = () => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isVolumeOpen, setIsVolumeOpen] = useState(false);
+  const [currentTime, setCurrentTime] = useState('0:00');
+  const [totalTime, setTotalTime] = useState('0:00');
+  
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  const togglePlayPause = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  const toggleVolume = () => {
+    setIsVolumeOpen(!isVolumeOpen);
+  };
+
+  return (
+    <div className="audio green-audio-player">
+      <div className="play-pause-btn" onClick={togglePlayPause}>
+        <svg viewBox="0 0 18 24" height="24" width="18" xmlns="http://www.w3.org/2000/svg">
+          <path id="playPause" className="play-pause-icon" d={isPlaying ? "M0 0h6v24H0zM12 0h6v24h-6z" : "M18 12L0 24V0"} fillRule="evenodd" fill="#566574"></path>
+        </svg>
+      </div>
+
+      <div className="controls">
+        <span className="current-time">{currentTime}</span>
+        <div data-direction="horizontal" className="slider">
+          <div className="progress">
+            <div data-method="rewind" id="progress-pin" className="pin"></div>
+          </div>
+        </div>
+        <span className="total-time">{totalTime}</span>
+      </div>
+
+      <div className="volume">
+        <div className="volume-btn" onClick={toggleVolume}>
+          <svg viewBox="0 0 24 24" height="24" width="24" xmlns="http://www.w3.org/2000/svg">
+            <path id="speaker" d="M14.667 0v2.747c3.853 1.146 6.666 4.72 6.666 8.946 0 4.227-2.813 7.787-6.666 8.934v2.76C20 22.173 24 17.4 24 11.693 24 5.987 20 1.213 14.667 0zM18 11.693c0-2.36-1.333-4.386-3.333-5.373v10.707c2-.947 3.333-2.987 3.333-5.334zm-18-4v8h5.333L12 22.36V1.027L5.333 7.693H0z" fillRule="evenodd" fill="#566574"></path>
+          </svg>
+        </div>
+        <div className={`volume-controls ${isVolumeOpen ? '' : 'hidden'}`}>
+          <div data-direction="vertical" className="slider">
+            <div className="progress">
+              <div data-method="changeVolume" id="volume-pin" className="pin"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <audio ref={audioRef} crossOrigin=""></audio>
+    </div>
+  );
+};
+
+export default MiniPlayer;
+
+/home/rafael/Projects/PesquisaESociedade/podcast/Project-Podcast/frontend/src/ui/components/Player/PlayerCard.tsx
+import React from 'react';
+import './PlayerCard.css';
+
+interface PlayerCardProps {
+  title: string;
+  subtitle: string;
+  imageUrl: string;
+}
+
+const PlayerCard: React.FC<PlayerCardProps> = ({ title, subtitle, imageUrl }) => {
+  return (
+    <div className="player-card">
+      <div className="player-card-img" style={{ backgroundImage: `url(${imageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
+      <div className="player-card-info">
+        <svg height="24" width="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0 0h24v24H0z" fill="none"></path>
+          <path d="M4.828 21l-.02.02-.021-.02H2.992A.993.993 0 0 1 2 20.007V3.993A1 1 0 0 1 2.992 3h18.016c.548 0 .992.445.992.993v16.014a1 1 0 0 1-.992.993H4.828zM20 15V5H4v14L14 9l6 6zm0 2.828l-6-6L6.828 19H20v-1.172zM8 11a2 2 0 1 1 0-4 2 2 0 0 1 0 4z" fill="currentColor"></path>
+        </svg>
+        <p className="player-text-title">{title}</p>
+        <p className="player-text-body">{subtitle}</p>
+        {/* Playback controls can be added here */}
+      </div>
+    </div>
+  );
+};
+
+export default PlayerCard;
+
+/home/rafael/Projects/PesquisaESociedade/podcast/Project-Podcast/frontend/src/ui/components/Podcast/PodcastCard.tsx
+import React from 'react';
+import './PodcastCard.css';
+import StyledButton from '../common/StyledButton';
+
+interface PodcastItem {
+  id: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  imageUrl: string;
+}
+
+interface PodcastCardProps {
+  item: PodcastItem;
+  onButtonClick?: () => void;
+  buttonText?: string;
+}
+
+const PodcastCard: React.FC<PodcastCardProps> = ({ 
+  item, 
+  onButtonClick, 
+  buttonText = "Ouvir" 
+}) => {
+  return (
+    <div className="card">
+      <div 
+        className="card-img" 
+        style={{ 
+          backgroundImage: `url(${item.imageUrl})`, 
+          backgroundSize: 'cover', 
+          backgroundPosition: 'center' 
+        }}
+      ></div>
+      <div className="card-info">
+        <div>
+          <svg height="24" width="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0 0h24v24H0z" fill="none"></path>
+            <path d="M4.828 21l-.02.02-.021-.02H2.992A.993.993 0 0 1 2 20.007V3.993A1 1 0 0 1 2.992 3h18.016c.548 0 .992.445.992.993v16.014a1 1 0 0 1-.992.993H4.828zM20 15V5H4v14L14 9l6 6zm0 2.828l-6-6L6.828 19H20v-1.172zM8 11a2 2 0 1 1 0-4 2 2 0 0 1 0 4z" fill="currentColor"></path>
+          </svg>
+          <p className="text-title">{item.title}</p>
+          <p className="text-body">{item.subtitle}</p>
+        </div>
+        <StyledButton text={buttonText} onClick={onButtonClick} className="podcast-card-button" />
+      </div>
+    </div>
+  );
+};
+
+export default PodcastCard;
+
+/home/rafael/Projects/PesquisaESociedade/podcast/Project-Podcast/frontend/src/ui/components/Podcast/PodcastCarousel.tsx
+import React, { useRef } from 'react';
+import PodcastCard from './PodcastCard';
+import FancyCarouselArrow from '../common/FancyCarouselArrow';
+import './PodcastCarousel.css';
+import { useNavigation } from '../../../hooks/useNavigation';
+
+interface PodcastItem {
+  id: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  imageUrl: string;
+}
+
+const PodcastCarousel: React.FC = () => {
+  const { navigateTo } = useNavigation();
+  const podcastItems: PodcastItem[] = [
+    {
+      id: '1',
+      title: 'Podcast 1',
+      subtitle: 'Episódio 1',
+      description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
+      imageUrl: 'placeholder-podcast.png'
+    },
+    {
+      id: '2',
+      title: 'Podcast 2',
+      subtitle: 'Episódio 2',
+      description: 'Sed do eiusmod tempor incididunt ut labore et dolore',
+      imageUrl: 'placeholder-podcast.png'
+    },
+    {
+      id: '3',
+      title: 'Podcast 3',
+      subtitle: 'Episódio 3',
+      description: 'Ut enim ad minim veniam, quis nostrud exercitation',
+      imageUrl: 'placeholder-podcast.png'
+    },
+    {
+      id: '4',
+      title: 'Podcast 4',
+      subtitle: 'Episódio 4',
+      description: 'Duis aute irure dolor in reprehenderit in voluptate',
+      imageUrl: 'placeholder-podcast.png'
+    },
+    {
+      id: '5',
+      title: 'Podcast 5',
+      subtitle: 'Episódio 5',
+      description: 'Excepteur sint occaecat cupidatat non proident',
+      imageUrl: 'placeholder-podcast.png'
+    },
+    {
+      id: '6',
+      title: 'Podcast 6',
+      subtitle: 'Episódio 6',
+      description: 'Sunt in culpa qui officia deserunt mollit anim',
+      imageUrl: 'placeholder-podcast.png'
+    },
+    {
+      id: '7',
+      title: 'Podcast 7',
+      subtitle: 'Episódio 7',
+      description: 'Sed do eiusmod tempor incididunt ut labore et dolore',
+      imageUrl: 'placeholder-podcast.png'
+    }
+  ];
+
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const handleScroll = (direction: 'prev' | 'next') => {
+    if (scrollRef.current) {
+      const containerWidth = scrollRef.current.offsetWidth;
+      const scrollAmount = containerWidth / 2;
+      if (direction === 'next') {
+        scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+      } else {
+        scrollRef.current.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+      }
+    }
+  };
+
+  const handlePodcastButtonClick = (podcastId: string) => {
+    console.log(`Reproduzindo podcast: ${podcastId}`);
+    navigateTo('playback');
+  };
+
+  return (
+    <div className="news-carousel">
+      <div className="cards-row" ref={scrollRef}>
+        {podcastItems.map((item) => (
+          <PodcastCard 
+            key={item.id} 
+            item={item}
+            onButtonClick={() => handlePodcastButtonClick(item.id)}
+            buttonText="Ouvir"
+          />
+        ))}
+      </div>
+      
+      <div className="carousel-controls">
+        <FancyCarouselArrow direction="prev" onClick={() => handleScroll('prev')} />
+        <FancyCarouselArrow direction="next" onClick={() => handleScroll('next')} />
+      </div>
+    </div>
+  );
+};
+
+export default PodcastCarousel;
+
+/home/rafael/Projects/PesquisaESociedade/podcast/Project-Podcast/frontend/src/ui/pages/auth/LoginPage.tsx
+import React, { useState } from 'react';
+import './LoginPage.css';
+import { useNavigation } from '../../../hooks/useNavigation';
+import userIcon from '../../../assets/images/icon-user.png';
+
+const LoginPage: React.FC = () => {
+  const { navigateTo } = useNavigation();
+  const [usuario, setUsuario] = useState('');
+  const [senha, setSenha] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log({ usuario, senha });
+    // Aqui você pode adicionar a lógica de autenticação
+  };
+
+  const handleRegisterClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    navigateTo('register');
+  };
+
+  return (
+    <div className="login-page-body">
+      <div className="form-card-container">
+        {/* Imagem do usuário no topo */}
+          <div className="user-icon-container">
+            <img 
+              src={userIcon} 
+              alt="Ícone do usuário" 
+              className="user-icon"
+            />
+          </div>
+        <h2>ENTRAR</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="usuario">Usuário:</label>
+            <input
+              type="text"
+              id="usuario"
+              name="usuario"
+              value={usuario}
+              onChange={(e) => setUsuario(e.target.value)}
+              placeholder="Digite seu usuário"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="senha">Senha:</label>
+            <input
+              type="password"
+              id="senha"
+              name="senha"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
+              placeholder="Digite sua senha"
+            />
+          </div>
+          <button type="submit">Entrar</button>
+        </form>
+        <div className="link-container">
+          Não tem uma conta? <a href="#" onClick={handleRegisterClick}>Cadastre-se</a>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default LoginPage;
+
+/home/rafael/Projects/PesquisaESociedade/podcast/Project-Podcast/frontend/src/ui/pages/auth/RegisterPage.tsx
+import React, { useState } from 'react';
+import './RegisterPage.css';
+import { useNavigation } from '../../../hooks/useNavigation';
+
+// Importe a mesma imagem do usuário
+import userIcon from '../../../assets/images/icon-user.png';
+
+const RegisterPage: React.FC = () => {
+  const { navigateTo } = useNavigation();
+  const [usuario, setUsuario] = useState('');
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log({ usuario, email, senha });
+    // Aqui você pode adicionar a lógica de cadastro
+  };
+
+  const handleLoginClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    navigateTo('login');
+  };
+
+  return (
+    <div className="register-page-body">
+      <div className="register-content">
+        <div className="form-card-container">
+          {/* Imagem do usuário no topo */}
+          <div className="user-icon-container">
+            <img 
+              src={userIcon} 
+              alt="Ícone do usuário" 
+              className="user-icon"
+            />
+          </div>
+          
+          <h2>CADASTRAR</h2>
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label htmlFor="usuario">Usuário:</label>
+              <input
+                type="text"
+                id="usuario"
+                name="usuario"
+                value={usuario}
+                onChange={(e) => setUsuario(e.target.value)}
+                placeholder="Digite seu usuário"
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="email">Email:</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Digite seu email"
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="senha">Senha:</label>
+              <input
+                type="password"
+                id="senha"
+                name="senha"
+                value={senha}
+                onChange={(e) => setSenha(e.target.value)}
+                placeholder="Digite sua senha"
+              />
+            </div>
+            <button type="submit">Cadastrar</button>
+          </form>
+          <div className="link-container">
+            Já tem uma conta? <a href="#" onClick={handleLoginClick}>Entrar</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default RegisterPage;
+
+/home/rafael/Projects/PesquisaESociedade/podcast/Project-Podcast/frontend/src/ui/pages/HomePage.tsx
+import React from 'react';
+import { useAuth } from '../../hooks/useAuth';
+import Menu from '../components/Menu/Menu';
+import NewsCarousel from '../components/News/NewsCarousel';
+
+const HomePage: React.FC = () => {
+  const { user } = useAuth();
+
+  return (
+    <section className="screen" id="homeScreen">
+      <h1 className="hero-title">
+        Olá <span className="username">{user.name}</span>, seja bem vindo de volta!<br/>
+        Confira nossas últimas notícias e PodCasts!
+      </h1>
+
+      <Menu />
+      <NewsCarousel />
+    </section>
+  );
+};
+
+export default HomePage;
+
+/home/rafael/Projects/PesquisaESociedade/podcast/Project-Podcast/frontend/src/ui/pages/PlaybackPage.tsx
+import React from 'react';
+import { useAuth } from '../../hooks/useAuth';
+import Menu from '../components/Menu/Menu';
+import NewsCarousel from '../components/News/NewsCarousel';
+
+const PlaybackPage: React.FC = () => {
+  const { user } = useAuth();
+  
+  return <section className="screen" id="homeScreen">
+      <h1 className="hero-title">
+        Olá <span className="username">{user.name}</span>, seja bem vindo de volta!<br/>
+        Confira nossas últimas notícias e PodCasts!
+      </h1>
+
+      <Menu />
+      <NewsCarousel />
+    </section>;
+};
+
+export default PlaybackPage;
+
+/home/rafael/Projects/PesquisaESociedade/podcast/Project-Podcast/frontend/src/ui/pages/PodcastPage.tsx
+import React from 'react';
+import { useAuth } from '../../hooks/useAuth';
+import Menu from '../components/Menu/Menu';
+import PodcastCarousel from '../components/Podcast/PodcastCarousel';
+
+const PodcastPage: React.FC = () => {
+  const { user } = useAuth();
+
+  return (
+    <section className="screen" id="homeScreen">
+      <h1 className="hero-title">
+        Olá <span className="username">{user.name}</span>, seja bem vindo de volta!<br/>
+        Confira nossas últimas notícias e PodCasts!
+      </h1>
+
+      <Menu />
+      <PodcastCarousel />
+    </section>
+  );
+};
+
+export default PodcastPage;
+
+/home/rafael/Projects/PesquisaESociedade/podcast/Project-Podcast/frontend/vite.config.ts
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+// https://vite.dev/config/
+export default defineConfig({
+  plugins: [react()],
+})
+

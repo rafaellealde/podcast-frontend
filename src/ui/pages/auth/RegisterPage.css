@@ -1,0 +1,173 @@
+.register-page-body {
+    font-family: 'Roboto', Arial, sans-serif;
+    background: linear-gradient(180deg, var(--bg-left) 0 32%, var(--bg-right) 32% 100%);
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    margin: 0;
+}
+
+.register-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+    width: 100%;
+}
+
+.form-card-container {
+    background-color: var(--card-bg);
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    max-width: 450px;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: left;
+}
+
+.user-icon-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.user-icon {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--olive);
+    padding: 5px;
+    background-color: var(--white);
+}
+
+.form-card-container h2 {
+    font-family: 'Abhaya Libre', serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--olive);
+    margin-bottom: 32px;
+    text-align: center;
+    letter-spacing: 1px;
+}
+
+.form-group {
+    margin-bottom: 24px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--olive);
+    font-size: 14px;
+    font-family: 'Roboto', sans-serif;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="password"] {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1px solid #E5E7EB;
+    border-radius: 8px;
+    box-sizing: border-box;
+    background-color: var(--white);
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+    color: var(--text-dark);
+    transition: all 0.3s ease;
+}
+
+.form-group input[type="text"]:focus,
+.form-group input[type="email"]:focus,
+.form-group input[type="password"]:focus {
+    outline: none;
+    border-color: var(--purple);
+    box-shadow: 0 0 0 3px rgba(103, 80, 164, 0.1);
+}
+
+.form-card-container button {
+    background-color: var(--olive);
+    color: var(--white);
+    padding: 14px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    width: 100%;
+    margin-top: 8px;
+    transition: all 0.3s ease;
+    font-family: 'Roboto', sans-serif;
+}
+
+.form-card-container button:hover {
+    background-color: #444C2A;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(85, 92, 52, 0.2);
+}
+
+.link-container {
+    margin-top: 24px;
+    font-size: 14px;
+    text-align: center;
+    color: var(--olive);
+    font-family: 'Roboto', sans-serif;
+}
+
+.link-container a {
+    color: var(--purple);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.link-container a:hover {
+    color: #5A4790;
+    text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .register-page-body {
+        padding: 20px;
+    }
+    
+    .form-card-container {
+        padding: 32px 24px;
+    }
+    
+    .form-card-container h2 {
+        font-size: 24px;
+    }
+    
+    .user-icon {
+        width: 70px;
+        height: 70px;
+    }
+}
+
+@media (max-width: 480px) {
+    .form-card-container {
+        padding: 24px 20px;
+    }
+    
+    .form-card-container h2 {
+        font-size: 22px;
+        margin-bottom: 24px;
+    }
+    
+    .form-group input[type="text"],
+    .form-group input[type="email"],
+    .form-group input[type="password"] {
+        padding: 12px 14px;
+    }
+    
+    .user-icon {
+        width: 60px;
+        height: 60px;
+    }
+}

@@ -1,0 +1,105 @@
+/* ========================
+   Variáveis / Tokens
+   ======================== */
+:root {
+  --olive: #555C34;
+  --purple: #6750A4;
+  --white: #FFFFFF;
+  --bg-left: #c8d891;
+  --bg-right: #f6eef1;
+  --card-bg: #ffffff;
+  --text-dark: #222;
+  --gap: 24px;
+}
+
+/* Reset */
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  font-family: 'Roboto', Arial, sans-serif;
+  background: linear-gradient(180deg, var(--bg-left) 0 32%, var(--bg-right) 32% 100%);
+  color: var(--text-dark);
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+img { display: block; max-width: 100%; }
+
+.page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 28px;
+}
+
+/* Header Styles */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  gap: 12px;
+}
+
+.icon-btn {
+  width: 36px; height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+}
+
+.dropdown {
+  position: absolute;
+  top: 46px;
+  background: var(--card-bg);
+  border-radius: 6px;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+  padding: 8px;
+  min-width: 160px;
+  display: none;
+  z-index: 40;
+}
+
+.dropdown.show { display: block; }
+
+/* Menu Styles */
+.menu-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0 28px;
+}
+
+.pill {
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Abhaya Libre', serif;
+  font-weight: 800;
+  font-size: 14px;
+  border: 1px solid transparent;
+}
+
+.pill.selected {
+  background: var(--olive);
+  color: var(--white);
+}
+
+.pill.unselected {
+  background: var(--white);
+  color: var(--olive);
+}
+
+/* Add all other CSS styles from your original file here */
+.hero-title {
+  font-family: 'Abhaya Libre', serif;
+  font-weight: 800;
+  color: var(--white);
+}
+
+.hero-title .username {
+  color: var(--olive);
+}

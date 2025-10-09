@@ -1,0 +1,30 @@
+.cards-row {
+  display: flex;
+  gap: var(--gap);
+  overflow-x: auto; /* Permite scroll horizontal se necessário */
+  overflow-y: visible; /* IMPORTANTE: Permite que os cards saiam verticalmente */
+  position: relative;
+}
+
+.cards-row .card {
+  flex: 0 0 calc(50% - (var(--gap) / 2));
+}
+
+.carousel-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+  position: relative;
+  z-index: 1; /* Fica atrás dos cards com hover */
+}
+
+/* Opcional: Remover scrollbars se não quiser visualmente */
+.cards-row::-webkit-scrollbar {
+  display: none;
+}
+
+.cards-row {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

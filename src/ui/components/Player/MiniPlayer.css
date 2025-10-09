@@ -1,0 +1,205 @@
+/* From Uiverse.io by ParasSalunke - Modificado */
+.music-card {
+  cursor: pointer;
+  width: 100%;
+  max-width: 340px;
+  margin: 0 auto;
+  background-color: #f7f7f7;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: fixed;
+  bottom: 30px; /* Distância aumentada do bottom */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  height: auto; /* Altura automática */
+  min-height: 100px; /* Altura mínima reduzida */
+}
+
+.music-card:hover {
+  transform: translateX(-50%) translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.music-card:active {
+  transform: translateX(-50%) translateY(-2px);
+}
+
+.music-card.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.music-card.disabled:hover {
+  transform: translateX(-50%);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px; /* Padding vertical reduzido */
+  background-color: #fff;
+}
+
+.track-info {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.track-icon {
+  height: 20px; /* Ícone menor */
+  width: 20px; /* Ícone menor */
+  color: #f59e0b;
+  flex-shrink: 0;
+}
+
+.track-details {
+  margin-left: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.track-title {
+  font-size: 1rem; /* Fonte um pouco menor */
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.track-artist {
+  font-size: 0.8rem; /* Fonte menor */
+  color: #666;
+  margin: 2px 0 0 0; /* Margem reduzida */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.progress-container {
+  position: relative;
+  margin: 12px 16px 6px 16px; /* Margens reduzidas */
+  height: 5px; /* Altura da barra reduzida */
+  background-color: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: height 0.2s ease;
+}
+
+.progress-container:hover {
+  height: 6px; /* Altura no hover reduzida */
+}
+
+.progress-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background-color: #f59e0b;
+  border-radius: 3px;
+  transition: width 0.1s linear;
+  box-shadow: 0 0 4px rgba(245, 158, 11, 0.3);
+}
+
+.progress-time {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 16px 12px 16px; /* Padding bottom reduzido */
+  font-size: 0.75rem; /* Fonte do tempo menor */
+  color: #6b7280;
+  font-weight: 500;
+}
+
+/* Loading spinner */
+.loading-spinner {
+  width: 20px; /* Spinner menor */
+  height: 20px; /* Spinner menor */
+  border: 2px solid #e5e7eb;
+  border-top: 2px solid #f59e0b;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Estados de reprodução */
+.music-card.playing .track-icon {
+  color: #10b981;
+  animation: pulse 2s infinite;
+}
+
+.music-card.loading .track-icon {
+  opacity: 0.5;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Melhorias de acessibilidade */
+.music-card:focus {
+  outline: 2px solid #f59e0b;
+  outline-offset: 2px;
+}
+
+/* Responsividade */
+@media (max-width: 480px) {
+  .music-card {
+    max-width: calc(100% - 32px);
+    margin: 0 16px;
+    bottom: 70px; /* Distância menor no mobile */
+  }
+  
+  .card-header {
+    padding: 10px 12px; /* Padding ainda menor no mobile */
+  }
+  
+  .track-title {
+    font-size: 0.9rem; /* Fonte menor no mobile */
+  }
+  
+  .track-artist {
+    font-size: 0.75rem; /* Fonte menor no mobile */
+  }
+  
+  .progress-container {
+    margin: 10px 12px 4px 12px;
+  }
+  
+  .progress-time {
+    padding: 0 12px 10px 12px;
+    font-size: 0.7rem;
+  }
+}
+
+/* Para telas muito pequenas */
+@media (max-width: 360px) {
+  .music-card {
+    bottom: 60px;
+    max-width: calc(100% - 20px);
+  }
+}
+
+/* Indicador de erro */
+.track-artist:has(+ .error-message) {
+  color: #ef4444;
+}
+
+.error-message {
+  color: #ef4444;
+  font-size: 0.7rem;
+  margin-top: 2px;
+}
