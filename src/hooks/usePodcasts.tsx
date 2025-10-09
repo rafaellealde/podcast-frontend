@@ -27,7 +27,7 @@ export const usePodcasts = () => {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const response = await fetch('/api/podcast', { headers });
+      const response = await fetch('/api/podcasts', { headers });
       
       if (!response.ok) {
         if (response.status === 401) {

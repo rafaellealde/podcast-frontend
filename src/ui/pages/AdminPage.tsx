@@ -23,7 +23,7 @@ const AdminPage: React.FC = () => {
   // Buscar podcasts do backend
   const fetchPodcasts = async () => {
     try {
-      const res = await fetch('/api/podcasts');
+      const res = await fetch('/api/podcastss');
       const data = await res.json();
       setPodcasts(data);
     } catch (error) {
@@ -67,7 +67,7 @@ const AdminPage: React.FC = () => {
       const confirmed = window.confirm(`Deseja realmente excluir "${podcast.titulo}"?`);
       if (!confirmed) return;
 
-      const res = await fetch(`/api/podcasts/${podcast.id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/podcastss/${podcast.id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Erro ao excluir podcast');
 
       setStatusMessage('Podcast excluído com sucesso');
@@ -97,7 +97,7 @@ const AdminPage: React.FC = () => {
       if (target.capaFile) formData.append('capa', target.capaFile);
       if (target.audioFile) formData.append('audio', target.audioFile);
 
-      const url = selectedPodcast ? `/api/podcasts/${selectedPodcast.id}` : '/api/podcasts';
+      const url = selectedPodcast ? `/api/podcastss/${selectedPodcast.id}` : '/api/podcastss';
       const method = selectedPodcast ? 'PUT' : 'POST';
 
       const res = await fetch(url, { method, body: formData });

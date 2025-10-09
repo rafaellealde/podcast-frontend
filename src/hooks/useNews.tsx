@@ -17,7 +17,7 @@ export const useNews = () => {
       setLoading(true);
       setError(null);
       
-      const response = await fetch('/api/noticia');
+      const response = await fetch('/api/noticias');
       
       if (!response.ok) {
         throw new Error(`Erro ao carregar notícias: ${response.status}`);
