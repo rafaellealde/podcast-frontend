@@ -17,6 +17,12 @@ const UserDropdown: React.FC = () => {
     navigateTo('login');
   };
 
+  const handleRegisterClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsOpen(false);
+    navigateTo('register'); // Adicione esta função
+  };
+
   const handleLogout = () => {
     logout();
     setIsOpen(false);
@@ -26,10 +32,9 @@ const UserDropdown: React.FC = () => {
   const handleAdminClick = (e: React.MouseEvent) => {
     e.preventDefault();
     setIsOpen(false);
-    navigateTo('admin'); // ou a rota da sua tela de admin
+    navigateTo('admin');
   };
 
-  // Verificar se o usuário é admin
   const isAdmin = user?.role === 'admin';
 
   return (
@@ -53,7 +58,6 @@ const UserDropdown: React.FC = () => {
               {isAdmin && <small className="admin-badge">Administrador</small>}
             </div>
             
-            {/* Mostrar "Tela Admin" apenas para usuários com role admin */}
             {isAdmin && (
               <a href="#" onClick={handleAdminClick}>
                 Tela Admin
@@ -63,7 +67,10 @@ const UserDropdown: React.FC = () => {
             <a href="#" onClick={handleLogout}>Sair</a>
           </>
         ) : (
-          <a href="#" onClick={handleLoginClick}>Acessar</a>
+          <>
+            <a href="#" onClick={handleLoginClick}>Acessar</a>
+            <a href="#" onClick={handleRegisterClick}>Cadastrar</a> {/* Adicione esta linha */}
+          </>
         )}
       </div>
     </div>

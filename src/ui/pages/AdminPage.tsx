@@ -23,14 +23,45 @@ const AdminPage: React.FC = () => {
   // Buscar podcasts do backend
   const fetchPodcasts = async () => {
     try {
-      const res = await fetch('/api/podcastss');
-      const data = await res.json();
-      setPodcasts(data);
+      const res = await fetch('/api/podcasts');
+
+      // Se não retornou 200, loga o erro
+      if (!res.ok) {
+        let message = 'Erro ao salvar podcast';
+
+        try {
+          const text = await res.text();
+          if (text) {
+            const errData = JSON.parse(text);
+            message = errData.message || message;
+          }
+        } catch {
+          // se não for JSON, ignora
+        }
+
+        setStatusMessage(message);
+        setLoading(false);
+        return;
+      }
+
+
+      // Tenta pegar o texto bruto
+      const text = await res.text();
+      if (!text) {
+        console.warn("Resposta vazia da API");
+        setPodcasts([]); // evita quebrar o map
+        return;
+      }
+
+      // Faz parse só se não for vazio
+      const data = JSON.parse(text);
+      setPodcasts(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error('Erro ao buscar podcasts:', error);
-      setStatusMessage('Erro ao carregar podcasts');
+      console.error("Erro ao buscar podcasts:", error);
+      setStatusMessage("Erro ao carregar podcasts");
     }
   };
+
 
   useEffect(() => {
     fetchPodcasts();
@@ -67,7 +98,7 @@ const AdminPage: React.FC = () => {
       const confirmed = window.confirm(`Deseja realmente excluir "${podcast.titulo}"?`);
       if (!confirmed) return;
 
-      const res = await fetch(`/api/podcastss/${podcast.id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/podcasts/${podcast.id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Erro ao excluir podcast');
 
       setStatusMessage('Podcast excluído com sucesso');
@@ -97,7 +128,7 @@ const AdminPage: React.FC = () => {
       if (target.capaFile) formData.append('capa', target.capaFile);
       if (target.audioFile) formData.append('audio', target.audioFile);
 
-      const url = selectedPodcast ? `/api/podcastss/${selectedPodcast.id}` : '/api/podcastss';
+      const url = selectedPodcast ? `/api/podcasts/${selectedPodcast.id}` : '/api/podcasts';
       const method = selectedPodcast ? 'PUT' : 'POST';
 
       const res = await fetch(url, { method, body: formData });

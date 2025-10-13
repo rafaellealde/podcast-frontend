@@ -6,6 +6,7 @@ import PlaybackPage from '../../ui/pages/PlaybackPage';
 import MainLayout from '../../ui/layouts/MainLayout';
 import LoginPage from '../../ui/pages/auth/LoginPage';
 import AdminPage from '../../ui/pages/AdminPage';
+import RegisterPage from '../../ui/pages/auth/RegisterPage';
 
 
 const AppRouter: React.FC = () => {
@@ -23,6 +24,8 @@ const AppRouter: React.FC = () => {
         return <LoginPage />;
       case 'admin':
         return <AdminPage />;
+      case 'register':
+        return <RegisterPage />;
       default:
         return <HomePage />;
     }
@@ -30,7 +33,7 @@ const AppRouter: React.FC = () => {
 
   const page = renderPage();
 
-  if ([ 'login'].includes(currentPage)) {
+  if (['login', 'register'].includes(currentPage)) {
     return page;
   }
 

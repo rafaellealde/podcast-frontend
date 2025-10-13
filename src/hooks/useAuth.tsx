@@ -28,8 +28,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setLoading(true);
     try {
       console.log('Enviando login:', {
-        Email: credentials.email,
-        Senha: credentials.password
+        email: credentials.email,
+        senha: credentials.password
       });
 
       const response = await fetch('/api/auth/login', {
@@ -38,8 +38,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          Email: credentials.email,
-          Senha: credentials.password
+          email: credentials.email,
+          senha: credentials.password
         }),
       });
 
@@ -76,7 +76,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       // Salvar token no localStorage
       localStorage.setItem('token', token);
-      
+
       // Criar usuário com dados disponíveis (mais flexível)
       const userData: User = {
         id: (usuarioData.Id || usuarioData.id || '1').toString(),
@@ -85,10 +85,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         isLoggedIn: true,
         role: (usuarioData.Role || usuarioData.role || 'user') as 'user' | 'admin' // Adicione esta linha
       };
-      
+
       setUser(userData);
       console.log('Login realizado com sucesso:', userData);
-      
+
     } catch (error) {
       console.error('Erro no login:', error);
       throw error;
@@ -105,10 +105,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       console.log('Enviando registro:', {
-        Nome: userData.name,
-        Email: userData.email,
-        Senha: userData.password,
-        ConfirmarSenha: userData.confirmPassword
+        nome: userData.name,
+        email: userData.email,
+        senha: userData.password
       });
 
       const response = await fetch('/api/auth/register', {
@@ -117,32 +116,45 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          Nome: userData.name,
-          Email: userData.email,
-          Turma: 'default',
-          Senha: userData.password,
-          ConfirmarSenha: userData.confirmPassword
+          nome: userData.name,
+          email: userData.email,
+          senha: userData.password,
+          // Remova ConfirmarSenha se o backend não espera
         }),
       });
 
       const responseText = await response.text();
       console.log('Resposta bruta do registro:', responseText);
+      console.log('Status do registro:', response.status);
 
-      let data;
-      try {
-        data = JSON.parse(responseText);
-      } catch (e) {
-        throw new Error('Resposta do servidor não é JSON válido');
+      // Se a resposta for vazia mas o status for bem-sucedido
+      if (response.status === 200 || response.status === 201) {
+        console.log('Registro realizado com sucesso (resposta vazia)');
+        return; // Retorna sem erro
       }
 
-      console.log('Resposta parseada do registro:', data);
+      // Se houver conteúdo na resposta, tenta parsear como JSON
+      if (responseText && responseText.trim() !== '') {
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (e) {
+          console.error('Erro ao parsear JSON:', e);
+          throw new Error('Resposta do servidor não é JSON válido');
+        }
 
-      if (!response.ok) {
-        throw new Error(data.message || data.title || `Erro ${response.status}: ${response.statusText}`);
+        console.log('Resposta parseada do registro:', data);
+
+        if (!response.ok) {
+          throw new Error(data.message || data.title || `Erro ${response.status}: ${response.statusText}`);
+        }
+
+        console.log('Usuário registrado com sucesso:', data);
+      } else if (!response.ok) {
+        // Se a resposta estiver vazia mas o status não for bem-sucedido
+        throw new Error(`Erro ${response.status}: ${response.statusText}`);
       }
 
-      console.log('Usuário registrado com sucesso:', data);
-      
     } catch (error) {
       console.error('Erro no registro:', error);
       throw error;
