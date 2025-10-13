@@ -1,4 +1,4 @@
-import React, { useState, createContext, useContext, type ReactNode } from 'react';
+import React, { useState, createContext, useContext, type ReactNode, useEffect } from 'react';
 import type { User, AuthFormData } from '../models/user';
 
 interface AuthContextType {
@@ -8,6 +8,7 @@ interface AuthContextType {
   updateUser: (userData: Partial<User>) => void;
   register: (userData: AuthFormData) => Promise<void>;
   loading: boolean;
+  initialized: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,6 +24,35 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
+  const [initialized, setInitialized] = useState(false);
+
+  // Função para salvar usuário no localStorage
+  const saveUserToStorage = (userData: User) => {
+    localStorage.setItem('user', JSON.stringify(userData));
+  };
+
+  // Função para remover usuário do localStorage
+  const removeUserFromStorage = () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+  };
+
+  // Função para recuperar usuário do localStorage
+  const getUserFromStorage = (): User | null => {
+    try {
+      const savedUser = localStorage.getItem('user');
+      const token = localStorage.getItem('token');
+      
+      if (savedUser && token) {
+        const userData = JSON.parse(savedUser);
+        return { ...userData, isLoggedIn: true };
+      }
+    } catch (error) {
+      console.error('Erro ao recuperar usuário do localStorage:', error);
+      removeUserFromStorage();
+    }
+    return null;
+  };
 
   const login = async (credentials: AuthFormData) => {
     setLoading(true);
@@ -43,7 +73,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }),
       });
 
-      // Primeiro obtenha o texto bruto para debug
       const responseText = await response.text();
       console.log('Resposta bruta:', responseText);
 
@@ -62,7 +91,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw new Error(data.message || data.title || `Erro ${response.status}: ${response.statusText}`);
       }
 
-      // Tratamento flexível para diferentes estruturas de resposta
       const token = data.Token || data.token || data.accessToken;
       const usuarioData = data.Usuario || data.usuario || data.user || data;
 
@@ -74,23 +102,27 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw new Error('Token de autenticação não recebido');
       }
 
-      // Salvar token no localStorage
-      localStorage.setItem('token', token);
-
-      // Criar usuário com dados disponíveis (mais flexível)
+      // Criar objeto do usuário
       const userData: User = {
         id: (usuarioData.Id || usuarioData.id || '1').toString(),
         name: usuarioData.Nome || usuarioData.nome || 'Usuário',
         email: usuarioData.Email || usuarioData.email || credentials.email,
         isLoggedIn: true,
-        role: (usuarioData.Role || usuarioData.role || 'user') as 'user' | 'admin' // Adicione esta linha
+        role: (usuarioData.Role || usuarioData.role || 'user') as 'user' | 'admin'
       };
 
+      // Salvar token e dados do usuário no localStorage
+      localStorage.setItem('token', token);
+      saveUserToStorage(userData);
+
+      // Atualizar estado
       setUser(userData);
       console.log('Login realizado com sucesso:', userData);
 
     } catch (error) {
       console.error('Erro no login:', error);
+      // Limpar storage em caso de erro
+      removeUserFromStorage();
       throw error;
     } finally {
       setLoading(false);
@@ -119,7 +151,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           nome: userData.name,
           email: userData.email,
           senha: userData.password,
-          // Remova ConfirmarSenha se o backend não espera
         }),
       });
 
@@ -127,13 +158,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log('Resposta bruta do registro:', responseText);
       console.log('Status do registro:', response.status);
 
-      // Se a resposta for vazia mas o status for bem-sucedido
       if (response.status === 200 || response.status === 201) {
         console.log('Registro realizado com sucesso (resposta vazia)');
-        return; // Retorna sem erro
+        return;
       }
 
-      // Se houver conteúdo na resposta, tenta parsear como JSON
       if (responseText && responseText.trim() !== '') {
         let data;
         try {
@@ -151,7 +180,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         console.log('Usuário registrado com sucesso:', data);
       } else if (!response.ok) {
-        // Se a resposta estiver vazia mas o status não for bem-sucedido
         throw new Error(`Erro ${response.status}: ${response.statusText}`);
       }
 
@@ -164,26 +192,51 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    removeUserFromStorage();
     setUser(null);
+    console.log('Logout realizado');
   };
 
   const updateUser = (userData: Partial<User>) => {
     if (user) {
-      setUser({ ...user, ...userData });
+      const updatedUser = { ...user, ...userData };
+      setUser(updatedUser);
+      saveUserToStorage(updatedUser); // Atualizar também no localStorage
     }
   };
 
-  React.useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      console.log('Token encontrado no localStorage');
-      // Aqui você pode adicionar lógica para validar o token
-      // e buscar os dados do usuário (incluindo role) se necessário
-    }
+  // Efeito para inicializar a autenticação quando o componente montar
+  useEffect(() => {
+    const initializeAuth = () => {
+      const savedUser = getUserFromStorage();
+      
+      if (savedUser) {
+        console.log('Usuário recuperado do localStorage:', savedUser);
+        setUser(savedUser);
+      } else {
+        console.log('Nenhum usuário autenticado encontrado no localStorage');
+        setUser(null);
+      }
+      
+      setInitialized(true);
+    };
+
+    initializeAuth();
   }, []);
 
-  const value = { user, login, logout, updateUser, register, loading };
+  const value = { 
+    user, 
+    login, 
+    logout, 
+    updateUser, 
+    register, 
+    loading, 
+    initialized 
+  };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
 };

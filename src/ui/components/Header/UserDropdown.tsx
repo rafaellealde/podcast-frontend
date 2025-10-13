@@ -6,10 +6,14 @@ import './Header.css';
 
 const UserDropdown: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, logout, initialized } = useAuth();
   const { navigateTo } = useNavigation();
 
-  const toggleDropdown = () => setIsOpen(!isOpen);
+  const toggleDropdown = () => {
+    if (initialized) {
+      setIsOpen(!isOpen);
+    }
+  };
 
   const handleLoginClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -20,7 +24,7 @@ const UserDropdown: React.FC = () => {
   const handleRegisterClick = (e: React.MouseEvent) => {
     e.preventDefault();
     setIsOpen(false);
-    navigateTo('register'); // Adicione esta função
+    navigateTo('register');
   };
 
   const handleLogout = () => {
@@ -37,6 +41,21 @@ const UserDropdown: React.FC = () => {
 
   const isAdmin = user?.role === 'admin';
 
+  // Mostrar loading enquanto a autenticação não foi inicializada
+  if (!initialized) {
+    return (
+      <div className="user-wrap">
+        <button 
+          className="icon-btn" 
+          title="Carregando..."
+          disabled
+        >
+          <img src={userIcon} alt="Carregando..." />
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="user-wrap">
       <button 
@@ -44,7 +63,7 @@ const UserDropdown: React.FC = () => {
         onClick={toggleDropdown}
         aria-haspopup="true" 
         aria-expanded={isOpen}
-        title="Usuário"
+        title={user?.isLoggedIn ? `Usuário: ${user.name}` : 'Usuário'}
       >
         <img src={userIcon} alt="Usuário" />
       </button>
@@ -69,7 +88,7 @@ const UserDropdown: React.FC = () => {
         ) : (
           <>
             <a href="#" onClick={handleLoginClick}>Acessar</a>
-            <a href="#" onClick={handleRegisterClick}>Cadastrar</a> {/* Adicione esta linha */}
+            <a href="#" onClick={handleRegisterClick}>Cadastrar</a>
           </>
         )}
       </div>
