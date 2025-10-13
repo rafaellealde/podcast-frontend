@@ -15,7 +15,7 @@ export interface AdminPodcastItem {
 export interface NewsItem {
   id?: number;
   titulo: string;
-  descricao: string; // Backend espera 'descricao' em vez de 'conteudo'
+  descricao: string;
   imagemFile?: File;
   imagemUrl?: string;
   dataPublicacao?: string;
@@ -33,7 +33,7 @@ const AdminPage: React.FC = () => {
   // Estados para Notícias
   const [news, setNews] = useState<NewsItem[]>([]);
   const [selectedNews, setSelectedNews] = useState<NewsItem | null>(null);
-  const [newNews, setNewNews] = useState<NewsItem>({ titulo: '', descricao: '' }); // Usar descricao aqui também
+  const [newNews, setNewNews] = useState<NewsItem>({ titulo: '', descricao: '' });
   
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -102,8 +102,8 @@ const AdminPage: React.FC = () => {
       const mappedNews: NewsItem[] = Array.isArray(data) ? data.map((item: any) => ({
         id: item.id,
         titulo: item.titulo || 'Sem título',
-        descricao: item.descricao || 'Sem descrição', // Usar apenas descricao
-        imagemUrl: item.imagemUrl || item.capaUrl,
+        descricao: item.descricao || 'Sem descrição',
+        imagemUrl: item.imagemUrl || item.capaUrl, // Backend usa capaUrl
         dataPublicacao: item.dataPublicacao
       })) : [];
       
@@ -397,7 +397,7 @@ const AdminPage: React.FC = () => {
 
       const target = selectedNews || newNews;
       
-      // Validações - agora usando descricao em vez de conteudo
+      // Validações
       if (!target.titulo.trim() || !target.descricao.trim()) {
         setStatusMessage('Título e descrição são obrigatórios');
         setLoading(false);
@@ -421,7 +421,7 @@ const AdminPage: React.FC = () => {
       let res: Response;
 
       if (selectedNews && selectedNews.id) {
-        // ATUALIZAR notícia existente - usar JSON normal
+        // ATUALIZAR notícia existente - usar JSON normal (sem arquivos)
         console.log('Atualizando notícia via JSON:', selectedNews.id);
         res = await fetch(`/api/noticias/${selectedNews.id}`, {
           method: 'PUT',
@@ -431,23 +431,51 @@ const AdminPage: React.FC = () => {
           },
           body: JSON.stringify({
             titulo: target.titulo.trim(),
-            descricao: target.descricao.trim() // Usar descricao
+            descricao: target.descricao.trim()
           })
         });
       } else {
-        // CRIAR nova notícia - usar JSON normal
-        console.log('Criando nova notícia via JSON');
-        res = await fetch('/api/noticias', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
+        // CRIAR nova notícia - usar endpoint de upload se tiver imagem
+        if (target.imagemFile) {
+          // Usar multipart para upload com imagem
+          const formData = new FormData();
+          
+          // Criar objeto JSON para os dados conforme esperado pelo backend
+          const dadosJson = JSON.stringify({
             titulo: target.titulo.trim(),
-            descricao: target.descricao.trim() // Usar descricao
-          })
-        });
+            descricao: target.descricao.trim()
+          });
+          
+          const blob = new Blob([dadosJson], { type: 'application/json' });
+          formData.append('dados', blob);
+          
+          if (target.imagemFile) {
+            formData.append('capa', target.imagemFile); // Backend espera 'capa'
+          }
+
+          console.log('Criando nova notícia com upload');
+          res = await fetch('/api/noticias/upload', {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+        } else {
+          // Usar JSON normal se não tiver imagem
+          console.log('Criando nova notícia via JSON');
+          res = await fetch('/api/noticias', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              titulo: target.titulo.trim(),
+              descricao: target.descricao.trim()
+            })
+          });
+        }
       }
 
       console.log('Status da resposta (notícia):', res.status);
@@ -693,7 +721,7 @@ const AdminPage: React.FC = () => {
             />
             
             <textarea
-              name="descricao" // Alterado de 'conteudo' para 'descricao'
+              name="descricao"
               placeholder="Descrição da notícia *"
               value={selectedNews?.descricao || newNews.descricao}
               onChange={handleNewsInputChange}
@@ -791,7 +819,7 @@ const AdminPage: React.FC = () => {
                           ? `${getNewsContent(newsItem).substring(0, 100)}...` 
                           : getNewsContent(newsItem)}
                       </p>
-                      {newsItem.imagemUrl && (
+                      {newsItem.imagemUrl && newsItem.imagemUrl !== 'null' && (
                         <small style={{ color: '#9ca3af', fontSize: '12px' }}>
                           Imagem: {newsItem.imagemUrl}
                         </small>
