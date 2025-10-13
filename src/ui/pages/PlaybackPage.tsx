@@ -1,25 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useAuth } from '../../hooks/useAuth';
+import { useCurrentPodcast } from '../../hooks/useCurrentPodcast'; // Importe o hook
 import Menu from '../components/Menu/Menu';
 import PlayerCard from '../components/Player/PlayerCard';
 import MiniPlayer from '../components/Player/MiniPlayer';
-import type { PodcastItem } from '../../hooks/usePodcasts';
 
 const PlaybackPage: React.FC = () => {
   const { user } = useAuth();
-  const [currentPodcast, setCurrentPodcast] = useState<PodcastItem | null>(null);
-
-  useEffect(() => {
-    // Ler do localStorage temporariamente
-    const savedPodcast = localStorage.getItem('currentPodcast');
-    if (savedPodcast) {
-      try {
-        setCurrentPodcast(JSON.parse(savedPodcast));
-      } catch (error) {
-        console.error('Erro ao parsear podcast do localStorage:', error);
-      }
-    }
-  }, []);
+  const { currentPodcast } = useCurrentPodcast(); // Use o hook
 
   const displayName = user?.name || 'visitante';
   const hasValidPodcast = currentPodcast && currentPodcast.titulo;
@@ -34,7 +22,6 @@ const PlaybackPage: React.FC = () => {
       <Menu />
 
       <div className="playback-content">
-        {/* Passando as props necessárias para o PlayerCard */}
         {hasValidPodcast ? (
           <PlayerCard 
             title={currentPodcast.titulo}
@@ -44,16 +31,15 @@ const PlaybackPage: React.FC = () => {
         ) : (
           <PlayerCard 
             title="Nenhum podcast selecionado"
-            subtitle=""
-            imageUrl="" // ou uma imagem padrão
+            subtitle="Selecione um podcast na página de podcasts"
+            imageUrl=""
           />
         )}
         
-        {hasValidPodcast && currentPodcast.audioUrl && (
-          <div className="audio-section">
-            <MiniPlayer />
-          </div>
-        )}
+        {/* Sempre renderize o MiniPlayer - ele vai se comportar conforme o currentPodcast */}
+        <div className="audio-section">
+          <MiniPlayer />
+        </div>
       </div>
 
       {!hasValidPodcast && (

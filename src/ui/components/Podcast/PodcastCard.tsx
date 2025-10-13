@@ -21,8 +21,10 @@ const PodcastCard: React.FC<PodcastCardProps> = ({
   onButtonClick, 
   buttonText = "Ouvir" 
 }) => {
+  const hasAudio = item.audioUrl && item.audioUrl.trim() !== '';
+  
   return (
-    <div className="card">
+    <div className={`card ${!hasAudio ? 'no-audio' : ''}`}>
       <div 
         className="card-img" 
         style={{ 
@@ -30,7 +32,13 @@ const PodcastCard: React.FC<PodcastCardProps> = ({
           backgroundSize: 'cover', 
           backgroundPosition: 'center' 
         }}
-      ></div>
+      >
+        {!hasAudio && (
+          <div className="audio-warning">
+            <span>Áudio Indisponível</span>
+          </div>
+        )}
+      </div>
       <div className="card-info">
         <div className="card-content">
           <svg height="24" width="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -40,7 +48,12 @@ const PodcastCard: React.FC<PodcastCardProps> = ({
           <p className="text-title">{item.titulo}</p>
           <p className="text-body">{item.descricao}</p>
         </div>
-        <StyledButton text={buttonText} onClick={onButtonClick} className="podcast-card-button" />
+        <StyledButton 
+          text={hasAudio ? buttonText : "Indisponível"} 
+          onClick={hasAudio ? onButtonClick : undefined}
+          className="podcast-card-button"
+          disabled={!hasAudio}
+        />
       </div>
     </div>
   );

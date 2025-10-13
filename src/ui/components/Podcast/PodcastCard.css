@@ -1,5 +1,5 @@
 .card {
-  min-height: 550px; /* Aumentei de 300px para 400px */
+  min-height: 550px;
   border-radius: 0em;
   padding: 1.9rem;
   background: #f5f5f5;
@@ -51,8 +51,6 @@
   margin: 5px 0 15px 0;
 }
 
-
-
 /*Image*/
 .card-img {
   width: 100%;
@@ -62,6 +60,35 @@
   left: 0;
   background: #ee9ca7;
   background: linear-gradient(to bottom, #e7aeae, #ee9ca7);
+}
+
+/* Estados sem áudio */
+.card.no-audio {
+  opacity: 0.8;
+  position: relative;
+}
+
+.card.no-audio::before {
+  background: rgba(100, 100, 100, 0.6) !important;
+}
+
+.audio-warning {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 0, 0, 0.8);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: bold;
+  z-index: 10;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.podcast-card-button {
+  /* Estilos específicos se necessário */
 }
 
 /*Hover*/
@@ -79,4 +106,13 @@
 .card:hover .card-info {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* Hover específico para cards sem áudio */
+.card.no-audio:hover {
+  cursor: not-allowed;
+}
+
+.card.no-audio:hover:before {
+  background: rgba(100, 100, 100, 0.7) !important;
 }

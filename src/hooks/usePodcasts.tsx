@@ -1,12 +1,5 @@
 import { useState, useEffect } from 'react';
-
-export interface PodcastItem {
-  id: string;
-  titulo: string;
-  descricao: string;
-  capaUrl: string;
-  audioUrl: string;
-}
+import type { PodcastItem, PodcastApiResponse } from '../models/podcast';
 
 export const usePodcasts = () => {
   const [podcasts, setPodcasts] = useState<PodcastItem[]>([]);
@@ -36,22 +29,23 @@ export const usePodcasts = () => {
         throw new Error(`Erro ao carregar podcasts: ${response.status}`);
       }
       
-      const data = await response.json();
+      const data: PodcastApiResponse[] = await response.json();
       console.log('Podcasts carregados do backend:', data);
       
-      // Mapeamento com valores padrão mais robustos
-      const mappedPodcasts: PodcastItem[] = data.map((item: any) => {
-        console.log('Processando podcast:', item); // Debug
+      // Mapeamento robusto com tratamento de audioUrl
+      const mappedPodcasts: PodcastItem[] = data.map((item: PodcastApiResponse) => {
+        console.log('Processando podcast:', item);
+        
         return {
-          id: item.id?.toString() || '0',
-          titulo: item.titulo || 'Título não disponível',
-          descricao: item.descricao || 'Descrição não disponível',
-          capaUrl: item.capaUrl || '/placeholder-podcast.png',
-          audioUrl: item.audioUrl || '' // Garantir que não seja undefined
+          id: item.id?.toString() || Math.random().toString(),
+          titulo: item.titulo?.trim() || 'Título não disponível',
+          descricao: item.descricao?.trim() || 'Descrição não disponível',
+          capaUrl: item.capaUrl?.trim() || '/placeholder-podcast.png',
+          audioUrl: item.audioUrl?.trim() || '' // Garantir que sempre seja string
         };
       });
       
-      console.log('Podcasts mapeados:', mappedPodcasts); // Debug
+      console.log('Podcasts mapeados:', mappedPodcasts);
       setPodcasts(mappedPodcasts);
     } catch (err) {
       console.error('Erro ao buscar podcasts:', err);

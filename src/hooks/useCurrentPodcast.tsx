@@ -1,12 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-
-export interface PodcastItem {
-  id: string;
-  titulo: string;
-  descricao: string;
-  capaUrl: string;
-  audioUrl: string | null;
-}
+import type { PodcastItem } from '../models/podcast'; // Use o tipo compartilhado
 
 interface CurrentPodcastContextType {
   currentPodcast: PodcastItem | null;
@@ -36,21 +29,42 @@ export const CurrentPodcastProvider = ({ children }: CurrentPodcastProviderProps
     if (savedPodcast) {
       try {
         const podcast = JSON.parse(savedPodcast);
-        setCurrentPodcastState(podcast);
-        console.log('📁 Podcast carregado do localStorage:', podcast.titulo);
+        
+        // Validar e normalizar o podcast do localStorage
+        const validatedPodcast: PodcastItem = {
+          id: podcast.id || Math.random().toString(),
+          titulo: podcast.titulo || 'Título não disponível',
+          descricao: podcast.descricao || 'Descrição não disponível',
+          capaUrl: podcast.capaUrl || '/placeholder-podcast.png',
+          audioUrl: podcast.audioUrl || '' // Garantir que seja string
+        };
+        
+        setCurrentPodcastState(validatedPodcast);
+        console.log('📁 Podcast carregado do localStorage:', validatedPodcast.titulo);
       } catch (error) {
         console.error('❌ Erro ao carregar podcast do localStorage:', error);
+        localStorage.removeItem('currentPodcast');
       }
     }
   }, []);
 
   // Função para definir o podcast (salva no localStorage também)
   const setCurrentPodcast = (podcast: PodcastItem | null) => {
-    setCurrentPodcastState(podcast);
     if (podcast) {
-      localStorage.setItem('currentPodcast', JSON.stringify(podcast));
-      console.log('💾 Podcast salvo no localStorage:', podcast.titulo);
+      // Validar o podcast antes de salvar
+      const validatedPodcast: PodcastItem = {
+        id: podcast.id || Math.random().toString(),
+        titulo: podcast.titulo || 'Título não disponível',
+        descricao: podcast.descricao || 'Descrição não disponível',
+        capaUrl: podcast.capaUrl || '/placeholder-podcast.png',
+        audioUrl: podcast.audioUrl || '' // Garantir que seja string
+      };
+      
+      setCurrentPodcastState(validatedPodcast);
+      localStorage.setItem('currentPodcast', JSON.stringify(validatedPodcast));
+      console.log('💾 Podcast salvo no localStorage:', validatedPodcast.titulo);
     } else {
+      setCurrentPodcastState(null);
       localStorage.removeItem('currentPodcast');
       console.log('🗑️ Podcast removido do localStorage');
     }

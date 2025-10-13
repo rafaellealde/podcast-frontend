@@ -4,10 +4,12 @@ import FancyCarouselArrow from '../common/FancyCarouselArrow';
 import './PodcastCarousel.css';
 import { useNavigation } from '../../../hooks/useNavigation';
 import { usePodcasts } from '../../../hooks/usePodcasts';
+import { useCurrentPodcast } from '../../../hooks/useCurrentPodcast'; // Importe o hook
 
 const PodcastCarousel: React.FC = () => {
   const { navigateTo } = useNavigation();
   const { podcasts, loading, error } = usePodcasts();
+  const { setCurrentPodcast } = useCurrentPodcast(); // Use o hook
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const handleScroll = (direction: 'prev' | 'next') => {
@@ -23,10 +25,20 @@ const PodcastCarousel: React.FC = () => {
   };
 
   const handlePodcastButtonClick = (podcast: PodcastItem) => {
-    console.log(`Reproduzindo podcast: ${podcast.titulo}`, podcast);
-    // Aqui você pode salvar o podcast selecionado no contexto ou localStorage
-    // para usar na página de playback
-    localStorage.setItem('currentPodcast', JSON.stringify(podcast));
+    console.log(`🎵 Selecionando podcast: ${podcast.titulo}`, podcast);
+    
+    // Verificar se o podcast tem áudio disponível
+    if (!podcast.audioUrl) {
+      console.warn('⚠️ Podcast não tem áudio:', podcast.titulo);
+      alert('Este podcast não tem áudio disponível no momento.');
+      return;
+    }
+
+    // Usar o hook para atualizar o estado global
+    setCurrentPodcast(podcast);
+    console.log('✅ Podcast selecionado e salvo no contexto:', podcast.titulo);
+    
+    // Navegar para a página de playback
     navigateTo('playback');
   };
 

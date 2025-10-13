@@ -2,6 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useCurrentPodcast } from '../../../hooks/useCurrentPodcast';
 import './MiniPlayer.css';
 
+// Variável global para controlar o áudio atual
+let globalAudio: HTMLAudioElement | null = null;
+
 const MiniPlayer: React.FC = () => {
   const { currentPodcast } = useCurrentPodcast();
   const [isPlaying, setIsPlaying] = useState(false);
@@ -18,29 +21,75 @@ const MiniPlayer: React.FC = () => {
     console.log('🎵 CurrentPodcast do hook:', currentPodcast);
   }, [currentPodcast]);
 
-  // Carregar áudio quando o podcast mudar
+  // Efeito principal: gerenciar mudanças de podcast
   useEffect(() => {
-    if (currentPodcast && audioRef.current) {
-      console.log('🚀 Iniciando carregamento do áudio:', currentPodcast.audioUrl);
-      
-      setIsLoading(true);
-      setError(null);
-
-      if (!currentPodcast.audioUrl) {
-        setError('URL do áudio não disponível');
-        setIsLoading(false);
-        return;
-      }
-
-      audioRef.current.src = currentPodcast.audioUrl;
-      audioRef.current.preload = 'metadata';
-      audioRef.current.load();
-
-      setIsPlaying(false);
-      setCurrentTime(0);
-      setDuration(0);
+    if (!currentPodcast || !audioRef.current) {
+      console.log('❌ Nenhum podcast selecionado ou áudio não disponível');
+      return;
     }
+
+    console.log('🚀 Iniciando carregamento do áudio:', currentPodcast.audioUrl);
+    
+    setIsLoading(true);
+    setError(null);
+    setIsPlaying(false);
+    setCurrentTime(0);
+    setDuration(0);
+
+    // Pausar áudio global anterior
+    if (globalAudio && globalAudio !== audioRef.current) {
+      globalAudio.pause();
+      globalAudio.currentTime = 0;
+    }
+
+    if (!currentPodcast.audioUrl) {
+      setError('URL do áudio não disponível');
+      setIsLoading(false);
+      return;
+    }
+
+    // Configurar novo áudio
+    audioRef.current.src = currentPodcast.audioUrl;
+    audioRef.current.preload = 'metadata';
+    audioRef.current.load();
+
+    // Atualizar áudio global
+    globalAudio = audioRef.current;
+
+    // Tentar carregar metadados
+    const handleLoadedMetadata = () => {
+      console.log('✅ Metadados carregados');
+      if (audioRef.current) {
+        setDuration(audioRef.current.duration || 0);
+      }
+      setIsLoading(false);
+    };
+
+    const handleError = () => {
+      console.error('❌ Erro ao carregar áudio');
+      setError('Erro ao carregar áudio');
+      setIsLoading(false);
+    };
+
+    audioRef.current.addEventListener('loadedmetadata', handleLoadedMetadata);
+    audioRef.current.addEventListener('error', handleError);
+
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.removeEventListener('loadedmetadata', handleLoadedMetadata);
+        audioRef.current.removeEventListener('error', handleError);
+      }
+    };
   }, [currentPodcast]);
+
+  // Limpeza quando o componente desmontar
+  useEffect(() => {
+    return () => {
+      if (audioRef.current && globalAudio === audioRef.current) {
+        globalAudio = null;
+      }
+    };
+  }, []);
 
   const togglePlayPause = async () => {
     if (!audioRef.current || !currentPodcast || !currentPodcast.audioUrl) {
@@ -50,18 +99,31 @@ const MiniPlayer: React.FC = () => {
 
     try {
       if (isPlaying) {
+        // Pausar
         audioRef.current.pause();
         setIsPlaying(false);
         console.log('⏸️ Áudio pausado');
       } else {
+        // Reproduzir
         console.log('▶️ Iniciando reprodução...');
         
+        // Pausar qualquer outro áudio que esteja tocando
+        if (globalAudio && globalAudio !== audioRef.current) {
+          globalAudio.pause();
+          globalAudio.currentTime = 0;
+        }
+
+        // Atualizar áudio global
+        globalAudio = audioRef.current;
+
+        // Verificar se o áudio está pronto
         if (audioRef.current.readyState < 2) {
           console.log('🔄 Áudio não pronto, recarregando...');
           audioRef.current.load();
           await new Promise(resolve => setTimeout(resolve, 500));
         }
 
+        // Tentar reproduzir
         await audioRef.current.play();
         setIsPlaying(true);
         console.log('✅ Reprodução iniciada!');
@@ -222,10 +284,13 @@ const MiniPlayer: React.FC = () => {
         onTimeUpdate={updateTime}
         onLoadedMetadata={updateTime}
         onLoadedData={() => {
-          console.log('✅ Áudio carregado');
+          console.log('✅ Áudio carregado completamente');
           setIsLoading(false);
         }}
-        onEnded={() => setIsPlaying(false)}
+        onEnded={() => {
+          setIsPlaying(false);
+          setCurrentTime(0);
+        }}
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
         onError={handleAudioError}
