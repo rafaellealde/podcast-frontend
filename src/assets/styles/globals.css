@@ -98,6 +98,7 @@ img { display: block; max-width: 100%; }
   font-family: 'Abhaya Libre', serif;
   font-weight: 800;
   color: var(--white);
+  text-align: left;
 }
 
 .hero-title .username {

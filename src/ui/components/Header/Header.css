@@ -1,4 +1,22 @@
 /* /frontend/src/ui/components/Header/Header.css */
+.app-header {
+  display: flex;
+  justify-content: space-between; 
+  align-items: center; 
+  padding: 8px 14px;
+  width: 100%;
+}
+
+.left {
+  display: flex;
+  align-items: center; 
+  gap: 20px;
+}
+
+.bioclube-logo {
+  width: 7%;
+  height: auto;
+}
 
 .icon-btn {
   background: transparent;
