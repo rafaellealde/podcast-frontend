@@ -1,4 +1,4 @@
-import React, { useState, useEffect, ChangeEvent } from 'react';
+import { useState, useEffect, ChangeEvent } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import './AdminPage.css';
 
@@ -22,7 +22,7 @@ export interface NewsItem {
 }
 
 const AdminPage: React.FC = () => {
-  const { user } = useAuth();
+  const { user: _user } = useAuth();
   const [activeTab, setActiveTab] = useState<'podcasts' | 'news'>('podcasts');
   
   // Estados para Podcasts

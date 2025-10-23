@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import { useRef } from 'react';
 import NewsCard from './NewsCard';
 import FancyCarouselArrow from '../common/FancyCarouselArrow';
 import './NewsCarousel.css';

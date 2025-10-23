@@ -1,4 +1,4 @@
-import React, { useState, createContext, useContext, type ReactNode } from 'react';
+import { useState, createContext, useContext, type ReactNode } from 'react';
 
 export type Page = 'home' | 'podcasts' | 'playback' | 'login' | 'register' | 'admin';
 
